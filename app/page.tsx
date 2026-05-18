@@ -87,6 +87,15 @@ export default function HomePage() {
     listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const getPageRange = (current: number, total: number, maxVisible = 5) => {
+    if (total <= maxVisible) return Array.from({ length: total }, (_, i) => i + 1);
+    const half = Math.floor(maxVisible / 2);
+    let start = Math.max(1, current - half);
+    const end = Math.min(total, start + maxVisible - 1);
+    if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+    return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+  };
+
   const resetSelection = () => {
     setSelectedBar(null);
     setDetailBar(null);
@@ -324,7 +333,13 @@ export default function HomePage() {
               >
                 이전
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              {currentPage > 3 && totalPages > 5 && (
+                <>
+                  <button className={styles.pageBtn} onClick={() => handlePageChange(1)} type="button">1</button>
+                  {currentPage > 4 && <span className={styles.pageEllipsis}>…</span>}
+                </>
+              )}
+              {getPageRange(currentPage, totalPages).map((p) => (
                 <button
                   key={p}
                   className={`${styles.pageBtn} ${p === currentPage ? styles.pageBtnActive : ""}`}
@@ -334,6 +349,12 @@ export default function HomePage() {
                   {p}
                 </button>
               ))}
+              {currentPage < totalPages - 2 && totalPages > 5 && (
+                <>
+                  {currentPage < totalPages - 3 && <span className={styles.pageEllipsis}>…</span>}
+                  <button className={styles.pageBtn} onClick={() => handlePageChange(totalPages)} type="button">{totalPages}</button>
+                </>
+              )}
               <button
                 className={styles.pageBtn}
                 onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
